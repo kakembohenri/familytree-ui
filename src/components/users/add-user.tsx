@@ -39,11 +39,11 @@ export function AddUser({ refetch }: AddUserProps) {
   // Add husband id
   useEffect(() => {
     if (user) {
-      setValue("id", user.id),
-        setValue("firstName", user.firstName),
-        setValue("lastName", user.lastName),
-        setValue("middleName", user.middleName ?? ""),
-        setValue("email", user.email);
+      setValue("id", user.id);
+      setValue("firstName", user.firstName);
+      setValue("lastName", user.lastName);
+      setValue("middleName", user.middleName ?? "");
+      setValue("email", user.email);
       setValue("phone", user.phone);
       setValue("gender", user.gender);
       setSubmittingMsg("Update User");

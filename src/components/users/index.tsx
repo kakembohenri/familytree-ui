@@ -12,12 +12,14 @@ import { DataTable } from "../data-table";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { AddUser } from "./add-user";
-import { columns } from "./columns";
+import { useUserColumns } from "./columns";
 
 const UsersView = () => {
   const [limit, setLimit] = useState<number>(10);
   const [page, setPage] = useState<number>(1);
   const [totalItems, setTotalItems] = useState<number>(0);
+
+  const columns = useUserColumns();
 
   const { data, isFetching, refetch } = useFetchUsersQuery({
     limit: limit,
