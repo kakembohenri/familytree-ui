@@ -1,5 +1,3 @@
-Certainly! Here's a **complete, single-block README** for your frontend including everything up to and beyond the Development Server section, all in one big copy for easy use:
-
 # 🧬 Family Tree Manager – Frontend
 
 This is the frontend application for the Family Tree Manager — a web interface for creating and managing family trees.
