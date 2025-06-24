@@ -14,6 +14,7 @@ import { Edit, Eye } from "lucide-react";
 export const useUserColumns = (): ColumnDef<User>[] => {
   const dispatch = useAppDispatch();
 
+  const userObj: any = useAppSelector(selectUser);
   return [
     {
       accessorKey: "firstName",
@@ -72,7 +73,6 @@ export const useUserColumns = (): ColumnDef<User>[] => {
         const handleUser = () => {
           dispatch(setUserDialog({ user, show: true }));
         };
-        const userObj: any = useAppSelector(selectUser);
         return (
           <>
             <Button variant="outline" size="icon" onClick={handleUser}>
