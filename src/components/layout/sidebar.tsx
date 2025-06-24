@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import useLogoutService from "@/src/apiServices/useLogoutService";

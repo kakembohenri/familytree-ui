@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
-import { Button } from "@/src/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,7 +17,6 @@ import { useVerifyEmailAddressMutation } from "@/src/redux/auth/auth-apiSlice";
 
 import { IVerifyEmailSchema } from "@/src/validations/auth-validations";
 import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "nextjs-toploader/app";
 import { FC, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -60,7 +60,7 @@ const VerifyEmail: FC<VerifyEmailProps> = ({ token, email }) => {
 
       HandleErrors(response);
 
-      let { data } = response;
+      const { data } = response;
 
       toast.success("Email Verification", {
         description: data.message,

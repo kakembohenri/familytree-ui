@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import {
@@ -43,7 +45,7 @@ const ResetPassword: FC<ResetPasswordProps> = ({ token, email }) => {
 
       HandleErrors(response);
 
-      let { data } = response;
+      const { data } = response;
 
       toast.success("Token validity", {
         description: data.message,

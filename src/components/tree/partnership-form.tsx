@@ -86,9 +86,9 @@ export function PartnershipForm({
   };
 
   // Filter out already selected partner from the other dropdown
-  const getAvailablePeople = (excludeId: string) => {
-    return Object.values(people).filter((person) => person.id !== excludeId);
-  };
+  // const getAvailablePeople = (excludeId: string) => {
+  //   return Object.values(people).filter((person) => person.id !== excludeId);
+  // };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

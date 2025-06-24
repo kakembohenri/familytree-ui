@@ -1,10 +1,13 @@
+/* eslint-disable @react-hooks/rules-of-hooks */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { Button } from "@/src/components/ui/button";
 import { formatToHumanReadableDate } from "@/src/lib/handle-dates";
 import { selectUser } from "@/src/redux/auth/auth-slice";
 import { useAppDispatch, useAppSelector } from "@/src/redux/redux-hooks";
-import { selectedUser, setUserDialog } from "@/src/redux/user/user-slice";
+import { setUserDialog } from "@/src/redux/user/user-slice";
 import { User } from "@/src/types/user";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Edit, Eye } from "lucide-react";

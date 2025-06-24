@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
-import { useAppDispatch } from "@/src/redux/redux-hooks";
 import { useRouter } from "nextjs-toploader/app";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -11,8 +12,6 @@ const useLogoutService = () => {
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const dispatch = useAppDispatch();
 
   const handleLogout = async () => {
     setIsLoading(true);

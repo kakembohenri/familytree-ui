@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { cn } from "@/src/lib/utils";
 import { IUpdateMemberSchema } from "@/src/validations/family-member-validation";
 import { Label } from "@radix-ui/react-label";

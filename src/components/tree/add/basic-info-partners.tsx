@@ -1,5 +1,5 @@
 import { cn } from "@/src/lib/utils";
-import { IAddMemberSchema } from "@/src/validations/family-member-validation";
+import { IAddPartnerSchema } from "@/src/validations/partner-validation";
 import { Label } from "@radix-ui/react-label";
 import { Upload } from "lucide-react";
 import { FC } from "react";
@@ -13,7 +13,6 @@ import { Avatar, AvatarImage } from "../../ui/avatar";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { RadioGroup, RadioGroupItem } from "../../ui/radio-group";
-import { IAddPartnerSchema } from "@/src/validations/partner-validation";
 
 interface BasicInfoPartnerProps {
   register: UseFormRegister<IAddPartnerSchema>;

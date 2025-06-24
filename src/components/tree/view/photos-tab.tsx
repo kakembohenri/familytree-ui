@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useAppDispatch, useAppSelector } from "@/src/redux/redux-hooks";
 import { setShowAddPhoto, setShowPhoto } from "@/src/redux/tree/tree-slice";
 import { FamilyNode, Image } from "@/src/types/family-member";

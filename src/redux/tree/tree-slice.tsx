@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions*/
+
 "use client";
 
 import { FamilyMember, Image, Partner } from "@/src/types/family-member";

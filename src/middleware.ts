@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { NextResponse } from "next/server";
 import { clearCookie, getCookie } from "./lib/handle-jwt";
 import { authFrontendRoutes, frontendPaths } from "./paths/frontendPaths";
@@ -31,7 +33,7 @@ export default async function middleware(req: any) {
     }
 
     if (req.nextUrl.pathname.split("/")[1] === "users" && session !== null) {
-      let role = JSON.parse(session.userProfile).Role;
+      const role = JSON.parse(session.userProfile).Role;
       if (role === UserRoles.Viewer) {
         const absoluteURL = new URL(
           `${frontendPaths.tree}?redirect=true`,

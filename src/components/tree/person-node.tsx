@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { cn } from "@/src/lib/utils";
 import { FamilyMember, Partner } from "@/src/types/family-member";
 import { FC, useEffect, useState } from "react";

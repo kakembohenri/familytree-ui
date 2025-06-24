@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 class CustomException extends Error {
   constructor(message: string) {
     super(message);

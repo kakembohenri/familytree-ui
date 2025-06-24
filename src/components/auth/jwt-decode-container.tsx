@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import { clearCookie, getCookie, getDecryptedJWT } from "@/src/lib/handle-jwt";
