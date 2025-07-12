@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function POST(req: NextRequest) {
-  const body: any = await req.json();
+  const body = await req.json();
   const { to, subject, htmlContent } = body;
 
   try {
