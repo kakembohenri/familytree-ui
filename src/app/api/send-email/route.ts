@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { to, subject, htmlContent } = body;
-
+  console.log("body:", body);
   try {
     await transporter.sendMail({
       from: process.env.EMAIL_FROM,
