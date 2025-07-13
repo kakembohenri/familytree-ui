@@ -50,20 +50,20 @@ const useSignUpApiService = ({
       setSubmittingMsg(data.message);
 
       // For prod where azure cant send emails using my preferred method
-      if (data.data !== null) {
-        const formData: any = data.data;
-        await fetch(apiRoutes.auth.send_email, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            to: formData.to,
-            subject: formData.subject,
-            htmlContent: formData.htmlContent,
-          }),
-        });
-      }
+      // if (data.data !== null) {
+      //   const formData: any = data.data;
+      //   await fetch(apiRoutes.auth.send_email, {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({
+      //       to: formData.to,
+      //       subject: formData.subject,
+      //       htmlContent: formData.htmlContent,
+      //     }),
+      //   });
+      // }
 
       reset();
     } catch (err: any) {
