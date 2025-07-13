@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   //   const body = await req.json();
   //   const { to, subject, htmlContent } = body;
   //   console.log("body:", body);
