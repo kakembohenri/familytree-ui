@@ -8,6 +8,7 @@ export const apiRoutes = {
     token_exists: "auth/token-exists",
     reset_password: "auth/reset-password",
     change_password: "auth/change-password",
+    send_email: "api/send-email",
   },
   tree: "tree",
   members: "tree/members",

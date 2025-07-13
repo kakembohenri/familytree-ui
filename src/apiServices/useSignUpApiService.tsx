@@ -2,13 +2,13 @@
 
 "use client";
 
-import { setCookie } from "@/src/lib/handle-jwt";
 import { useSignUpMutation } from "@/src/redux/auth/auth-apiSlice";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dispatch, SetStateAction, useState } from "react";
 import { useForm } from "react-hook-form";
 import HandleErrors from "../lib/handle-errors";
 import { ISignupSchema, SignupSchema } from "../validations/auth-validations";
+import { apiRoutes } from "../paths/apiRoutes";
 
 const useSignUpApiService = ({
   setSubmittingMsg,
@@ -40,7 +40,6 @@ const useSignUpApiService = ({
   // const handleLogin = async (values: ILoginSchema) => {
   const submitSignUp = async (values: ISignupSchema) => {
     try {
-      setSubmittingMsg("Signing in...");
       setIsLoading(true);
       const response: any = await handleSignUp(values);
 
@@ -48,11 +47,23 @@ const useSignUpApiService = ({
 
       const { data } = response;
 
-      sessionStorage.setItem("jwtSession", data.data);
-
-      await setCookie(data.data);
-
       setSubmittingMsg(data.message);
+
+      // For prod where azure cant send emails using my preferred method
+      if (data.data !== null) {
+        let formData: any = data.data;
+        await fetch(apiRoutes.auth.send_email, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            to: formData.to,
+            subject: formData.subject,
+            htmlContent: formData.htmlContent,
+          }),
+        });
+      }
 
       reset();
     } catch (err: any) {
