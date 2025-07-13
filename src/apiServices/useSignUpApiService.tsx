@@ -8,7 +8,6 @@ import { Dispatch, SetStateAction, useState } from "react";
 import { useForm } from "react-hook-form";
 import HandleErrors from "../lib/handle-errors";
 import { ISignupSchema, SignupSchema } from "../validations/auth-validations";
-import { apiRoutes } from "../paths/apiRoutes";
 
 const useSignUpApiService = ({
   setSubmittingMsg,
