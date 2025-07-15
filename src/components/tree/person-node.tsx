@@ -182,9 +182,11 @@ const PersonNode: FC<PersonNodeParams> = ({ person }) => {
         {person.firstName} {person.middleName} {person.lastName}
       </div>
       {person.born && (
-        <div className="text-center text-xs text-muted-foreground">
-          b. {formatToHumanReadableDate(person.born)}
-          {person.died && ` - d. ${formatToHumanReadableDate(person.died)}`}
+        <div className="flex flex-col text-center text-xs text-muted-foreground">
+          <span>b. {formatToHumanReadableDate(person.born)}</span>
+          <span>
+            {person.died && ` - d. ${formatToHumanReadableDate(person.died)}`}
+          </span>
         </div>
       )}
     </div>

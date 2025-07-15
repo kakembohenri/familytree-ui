@@ -253,9 +253,7 @@ export default function Tree() {
       )}
 
       {/* Add First Family Member Dialog */}
-      {showAddMemberDialog && chosenPerson && (
-        <AddFamilyMemberDialog refetch={handleRefetch} />
-      )}
+      {showAddMemberDialog && <AddFamilyMemberDialog refetch={handleRefetch} />}
 
       {/* Add partner */}
       {showAddMemberPartner && chosenPerson && (
