@@ -37,12 +37,12 @@ const MultiplePartnerships: FC<MultiplePartnershipsProps> = ({
           <PersonNode person={node} />
           <div className="mt-2">
             <Badge variant="outline" className="text-xs">
-              husband
+              Husband
             </Badge>
           </div>
         </div>
 
-        {node.partners.map((person, index) => (
+        {node.partners.map((person) => (
           <div key={person.id} className="flex flex-col items-center">
             {/* {renderPersonNode(person, person.id === node.primaryPerson)} */}
             <PersonNode person={person} />
