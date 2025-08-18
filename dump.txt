@@ -1,0 +1,906 @@
+"use client";
+
+import type React from "react";
+
+import { useState, useRef } from "react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Edit,
+  Eye,
+  Trash2,
+  UserPlus,
+  ZoomIn,
+  ZoomOut,
+  Move,
+  Search,
+  Users,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { useMobile } from "@/hooks/use-mobile";
+import { FamilyMemberDetailDialog } from "@/components/family-member-detail-dialog";
+import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
+import { FamilyMemberForm } from "@/components/family-member-form";
+import { useToast } from "@/hooks/use-toast";
+import { AddFamilyMemberDialog } from "@/components/add-family-member-dialog";
+
+// Types for our family tree data
+interface Person {
+  id: string;
+  name: string;
+  image?: string;
+  birthYear?: number;
+  deathYear?: number;
+  expanded?: boolean;
+  gender?: "male" | "female" | "other";
+  birthPlace?: string;
+  occupation?: string;
+  bio?: string;
+  photos?: string[];
+}
+
+interface Partnership {
+  id: string;
+  partners: [string, string]; // IDs of the two partners
+  children: FamilyNode[];
+  expanded?: boolean;
+  marriageYear?: number;
+  divorceYear?: number;
+}
+
+// New interface for multiple partnerships from one person
+interface MultiplePartnerships {
+  id: string;
+  primaryPerson: string; // ID of the person with multiple partners
+  partnerships: Partnership[];
+  expanded?: boolean;
+}
+
+type FamilyNode = Person | Partnership | MultiplePartnerships;
+
+// Enhanced sample data with multiple partnerships
+const sampleFamilyData: FamilyNode = {
+  id: "mp1",
+  primaryPerson: "person1",
+  expanded: true,
+  partnerships: [
+    {
+      id: "p1",
+      partners: ["person1", "person2"],
+      marriageYear: 1960,
+      divorceYear: 1975,
+      expanded: true,
+      children: [
+        {
+          id: "person7",
+          name: "Robert Smith",
+          image: "/placeholder.svg?height=100&width=100",
+          birthYear: 1965,
+          gender: "male",
+          birthPlace: "Chicago, IL",
+          occupation: "Software Engineer",
+          bio: "Robert is a software engineer who loves hiking and photography.",
+        },
+        {
+          id: "person8",
+          name: "Lisa Smith",
+          image: "/placeholder.svg?height=100&width=100",
+          birthYear: 1967,
+          gender: "female",
+          birthPlace: "New York, NY",
+          occupation: "Doctor",
+          bio: "Lisa is a pediatrician who volunteers at local clinics.",
+        },
+      ],
+    },
+    {
+      id: "p2",
+      partners: ["person1", "person3"],
+      marriageYear: 1978,
+      divorceYear: 1990,
+      expanded: true,
+      children: [
+        {
+          id: "person9",
+          name: "Michael Smith",
+          image: "/placeholder.svg?height=100&width=100",
+          birthYear: 1980,
+          gender: "male",
+          birthPlace: "Los Angeles, CA",
+          occupation: "Architect",
+          bio: "Michael is an award-winning architect who specializes in sustainable design.",
+        },
+      ],
+    },
+    {
+      id: "p3",
+      partners: ["person1", "person4"],
+      marriageYear: 1992,
+      expanded: true,
+      children: [
+        {
+          id: "person10",
+          name: "Emma Smith",
+          image: "/placeholder.svg?height=100&width=100",
+          birthYear: 1995,
+          gender: "female",
+          birthPlace: "Boston, MA",
+          occupation: "Teacher",
+          bio: "Emma teaches elementary school and loves working with children.",
+        },
+        {
+          id: "person11",
+          name: "James Smith",
+          image: "/placeholder.svg?height=100&width=100",
+          birthYear: 1997,
+          gender: "male",
+          birthPlace: "Boston, MA",
+          occupation: "Student",
+          bio: "James is studying computer science at MIT.",
+        },
+      ],
+    },
+  ],
+};
+
+// People dictionary
+const samplePeople: Record<string, Person> = {
+  person1: {
+    id: "person1",
+    name: "John Smith",
+    image: "/placeholder.svg?height=100&width=100",
+    birthYear: 1940,
+    gender: "male",
+    birthPlace: "Boston, MA",
+    occupation: "Retired Business Owner",
+    bio: "John was a successful business owner who had three marriages and five children. He loves spending time with his large family.",
+  },
+  person2: {
+    id: "person2",
+    name: "Sarah Johnson",
+    image: "/placeholder.svg?height=100&width=100",
+    birthYear: 1942,
+    deathYear: 2010,
+    gender: "female",
+    birthPlace: "Providence, RI",
+    occupation: "Nurse",
+    bio: "Sarah was John's first wife. She worked as a nurse and was known for her caring nature.",
+  },
+  person3: {
+    id: "person3",
+    name: "Mary Williams",
+    image: "/placeholder.svg?height=100&width=100",
+    birthYear: 1945,
+    gender: "female",
+    birthPlace: "Chicago, IL",
+    occupation: "Teacher",
+    bio: "Mary was John's second wife. She was a dedicated teacher who influenced many students.",
+  },
+  person4: {
+    id: "person4",
+    name: "Patricia Davis",
+    image: "/placeholder.svg?height=100&width=100",
+    birthYear: 1950,
+    gender: "female",
+    birthPlace: "Seattle, WA",
+    occupation: "Artist",
+    bio: "Patricia is John's current wife. She's a talented artist whose work has been exhibited nationally.",
+  },
+};
+
+export default function EnhancedFamilyTreeMultiplePartners() {
+  const { toast } = useToast();
+  const [familyData, setFamilyData] = useState<FamilyNode>(sampleFamilyData);
+  const [people, setPeople] = useState<Record<string, Person>>(samplePeople);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [isDragging, setIsDragging] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [highlightedPerson, setHighlightedPerson] = useState<string | null>(
+    null
+  );
+
+  // Dialog states
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isMobile = useMobile();
+
+  // Function to check node types
+  const isPartnership = (node: FamilyNode): node is Partnership => {
+    return "partners" in node && !("primaryPerson" in node);
+  };
+
+  const isMultiplePartnerships = (
+    node: FamilyNode
+  ): node is MultiplePartnerships => {
+    return "primaryPerson" in node && "partnerships" in node;
+  };
+
+  const isPerson = (node: FamilyNode): node is Person => {
+    return (
+      "name" in node && !("partners" in node) && !("primaryPerson" in node)
+    );
+  };
+
+ 
+  
+  // Function to handle person deletion
+  const handleDeletePerson = () => {
+    if (!selectedPerson) return;
+
+    // Create a copy of the people object without the deleted person
+    const newPeople = { ...people };
+    delete newPeople[selectedPerson.id];
+    setPeople(newPeople);
+
+    setShowDeleteDialog(false);
+
+    toast({
+      title: "Person deleted",
+      description: `${selectedPerson.name} has been removed from the family tree.`,
+    });
+  };
+
+  // Function to handle person update
+  const handleUpdatePerson = (updatedPerson: Person) => {
+    setPeople({
+      ...people,
+      [updatedPerson.id]: updatedPerson,
+    });
+
+    setShowEditDialog(false);
+    setSelectedPerson(null);
+
+    toast({
+      title: "Person updated",
+      description: `${updatedPerson.name}'s information has been updated.`,
+    });
+  };
+
+  // Function to handle adding a new person
+  const handleAddPerson = (newPersonData: Omit<Person, "id">) => {
+    const id = `person${Date.now()}`;
+    const newPerson: Person = { id, ...newPersonData };
+
+    setPeople({ ...people, [id]: newPerson });
+
+    toast({
+      title: "Person added",
+      description: `${newPerson.name} has been added to the family tree.`,
+    });
+  };
+
+  // Function to expand all nodes
+  const expandAll = () => {
+    const expandNode = (node: FamilyNode): FamilyNode => {
+      if (isPartnership(node)) {
+        return {
+          ...node,
+          expanded: true,
+          children: node.children.map(expandNode),
+        };
+      }
+
+      if (isMultiplePartnerships(node)) {
+        return {
+          ...node,
+          expanded: true,
+          partnerships: node.partnerships.map((partnership) => ({
+            ...partnership,
+            expanded: true,
+            children: partnership.children.map(expandNode),
+          })),
+        };
+      }
+
+      return { ...node, expanded: true };
+    };
+
+    setFamilyData(expandNode(familyData));
+  };
+
+  // Function to collapse all nodes
+  const collapseAll = () => {
+    const collapseNode = (node: FamilyNode): FamilyNode => {
+      if (isPartnership(node)) {
+        return {
+          ...node,
+          expanded: false,
+          children: node.children.map(collapseNode),
+        };
+      }
+
+      if (isMultiplePartnerships(node)) {
+        return {
+          ...node,
+          expanded: false,
+          partnerships: node.partnerships.map((partnership) => ({
+            ...partnership,
+            expanded: false,
+            children: partnership.children.map(collapseNode),
+          })),
+        };
+      }
+
+      return { ...node, expanded: false };
+    };
+
+    setFamilyData(collapseNode(familyData));
+  };
+
+  // Zoom functions
+  const zoomIn = () => setZoomLevel((prev) => Math.min(prev + 0.1, 2));
+  const zoomOut = () => setZoomLevel((prev) => Math.max(prev - 0.1, 0.5));
+  const resetView = () => {
+    setZoomLevel(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  // Drag handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setStartPosition({ x: e.clientX - position.x, y: e.clientY - position.y });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) {
+      setPosition({
+        x: e.clientX - startPosition.x,
+        y: e.clientY - startPosition.y,
+      });
+    }
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setIsDragging(true);
+    setStartPosition({
+      x: touch.clientX - position.x,
+      y: touch.clientY - position.y,
+    });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (isDragging) {
+      const touch = e.touches[0];
+      setPosition({
+        x: touch.clientX - startPosition.x,
+        y: touch.clientY - startPosition.y,
+      });
+    }
+  };
+
+  const handleTouchEnd = () => setIsDragging(false);
+
+  // Search functionality
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+
+    if (!e.target.value) {
+      setHighlightedPerson(null);
+      return;
+    }
+
+    const searchLower = e.target.value.toLowerCase();
+    const match = Object.values(people).find((person) =>
+      person.name.toLowerCase().includes(searchLower)
+    );
+
+    if (match) {
+      setHighlightedPerson(match.id);
+    } else {
+      setHighlightedPerson(null);
+    }
+  };
+
+  // Person action handlers
+  const handleViewPerson = (person: Person) => {
+    setSelectedPerson(person);
+    setShowDetailDialog(true);
+  };
+
+  const handleEditPerson = (person: Person) => {
+    setSelectedPerson(person);
+    setShowEditDialog(true);
+  };
+
+  const handleConfirmDeletePerson = (person: Person) => {
+    setSelectedPerson(person);
+    setShowDeleteDialog(true);
+  };
+
+  // Render a person node
+  const renderPersonNode = (person: Person, isHighlighted?: boolean) => {
+    const highlighted = isHighlighted || person.id === highlightedPerson;
+
+    return (
+      <div
+        className={cn(
+          "group relative transition-all duration-300",
+          highlighted && "scale-110 shadow-lg"
+        )}
+      >
+        <Avatar
+          className={cn(
+            "h-16 w-16 border-2 transition-all duration-300",
+            person.gender === "male"
+              ? "border-blue-300"
+              : person.gender === "female"
+              ? "border-pink-300"
+              : "border-purple-300",
+            highlighted
+              ? "ring-2 ring-primary ring-offset-2"
+              : "group-hover:border-primary/30"
+          )}
+        >
+          <AvatarImage
+            src={person.image || "/placeholder.svg?height=100&width=100"}
+            alt={person.name}
+          />
+          <AvatarFallback>{person.name.substring(0, 2)}</AvatarFallback>
+        </Avatar>
+
+        <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <TooltipProvider>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-6 w-6 rounded-full bg-white"
+                >
+                  <UserPlus className="h-3 w-3" />
+                  <span className="sr-only">Actions</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[160px]">
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => handleViewPerson(person)}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  <span>View</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => handleEditPerson(person)}
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  <span>Edit</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                  onClick={() => handleConfirmDeletePerson(person)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  <span>Delete</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </TooltipProvider>
+        </div>
+
+        <div className="mt-1 text-center text-sm font-medium">
+          {person.name}
+        </div>
+        {person.birthYear && (
+          <div className="text-center text-xs text-muted-foreground">
+            b. {person.birthYear}
+            {person.deathYear && ` - d. ${person.deathYear}`}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Render a single partnership
+  const renderPartnership = (
+    partnership: Partnership,
+    multiplePartnershipsId?: string
+  ) => {
+    const partner1 = people[partnership.partners[0]];
+    const partner2 = people[partnership.partners[1]];
+
+    if (!partner1 || !partner2) return null;
+
+    return (
+      <div key={partnership.id} className="flex flex-col items-center mb-6">
+        {/* Partnership header with marriage info */}
+        <div className="flex items-center gap-2 mb-2">
+          <Badge variant="outline" className="text-xs">
+            {partnership.marriageYear && `m. ${partnership.marriageYear}`}
+            {partnership.divorceYear && ` - div. ${partnership.divorceYear}`}
+            {!partnership.marriageYear &&
+              !partnership.divorceYear &&
+              "Partners"}
+          </Badge>
+        </div>
+
+        {/* Partners */}
+        <div className="flex items-center gap-4 mb-2 relative">
+          {/* Connection line between partners */}
+          <div className="absolute top-8 left-16 right-16 h-0.5 bg-primary/30"></div>
+
+          <div className="flex flex-col items-center">
+            {renderPersonNode(partner1)}
+          </div>
+          <div className="flex flex-col items-center">
+            {renderPersonNode(partner2)}
+          </div>
+        </div>
+
+        {/* Expand/collapse button for children */}
+        {partnership.children && partnership.children.length > 0 && (
+          <div className="flex items-center mb-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-5 w-5 rounded-full"
+              onClick={() =>
+                multiplePartnershipsId
+                  ? togglePartnershipExpanded(
+                      multiplePartnershipsId,
+                      partnership.id
+                    )
+                  : toggleExpanded(partnership.id)
+              }
+            >
+              {partnership.expanded ? (
+                <ChevronDown className="h-3 w-3" />
+              ) : (
+                <ChevronRight className="h-3 w-3" />
+              )}
+              <span className="sr-only">
+                {partnership.expanded ? "Collapse" : "Expand"}
+              </span>
+            </Button>
+          </div>
+        )}
+
+        {/* Children */}
+        {partnership.children &&
+          partnership.children.length > 0 &&
+          partnership.expanded && (
+            <>
+              <div className="h-6 w-0.5 bg-primary/30"></div>
+              <div className="flex flex-row items-start gap-6 relative">
+                {partnership.children.length > 1 && (
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary/30"></div>
+                )}
+                {partnership.children.map((child) => (
+                  <div key={child.id} className="flex flex-col items-center">
+                    <div className="h-4 w-0.5 bg-primary/30"></div>
+                    {renderFamilyTree(child)}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+      </div>
+    );
+  };
+
+  // Recursive component to render the tree
+  const renderFamilyTree = (node: FamilyNode) => {
+    if (isPerson(node)) {
+      return (
+        <div key={node.id} className="flex flex-col items-center">
+          {renderPersonNode(node)}
+        </div>
+      );
+    }
+
+    if (isPartnership(node)) {
+      return renderPartnership(node);
+    }
+
+    if (isMultiplePartnerships(node)) {
+      const primaryPerson = people[node.primaryPerson];
+
+      if (!primaryPerson) return null;
+
+      return (
+        <div key={node.id} className="flex flex-col items-center">
+          {/* All partners on the same horizontal line */}
+          <div className="flex items-center gap-8 mb-4 relative">
+            {/* Horizontal connection line spanning all partners */}
+            {node.partnerships.length > 0 && (
+              <div className="absolute top-8 left-16 right-16 h-0.5 bg-primary/30"></div>
+            )}
+
+            {/* Render all partners including the primary person */}
+            {[
+              primaryPerson,
+              ...node.partnerships.map(
+                (p) =>
+                  people[p.partners.find((id) => id !== node.primaryPerson)!]
+              ),
+            ]
+              .filter(Boolean)
+              .map((person, index) => (
+                <div key={person.id} className="flex flex-col items-center">
+                  {renderPersonNode(person, person.id === node.primaryPerson)}
+
+                  {/* Show partnership info below each partner (except primary person) */}
+                  {index > 0 && (
+                    <div className="mt-2">
+                      <Badge variant="outline" className="text-xs">
+                        {node.partnerships[index - 1].marriageYear &&
+                          `m. ${node.partnerships[index - 1].marriageYear}`}
+                        {node.partnerships[index - 1].divorceYear &&
+                          ` - div. ${node.partnerships[index - 1].divorceYear}`}
+                        {!node.partnerships[index - 1].marriageYear &&
+                          !node.partnerships[index - 1].divorceYear &&
+                          "Partners"}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              ))}
+          </div>
+
+          {/* Primary person indicator */}
+          <div className="mb-2">
+            <Badge
+              variant="secondary"
+              className="text-xs flex items-center gap-1"
+            >
+              <Users className="h-3 w-3" />
+              {node.partnerships.length} partnerships
+            </Badge>
+          </div>
+
+          {/* Expand/collapse button */}
+          <div className="flex items-center mb-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 rounded-full"
+              onClick={() => toggleExpanded(node.id)}
+            >
+              {node.expanded ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+              <span className="sr-only">
+                {node.expanded ? "Collapse" : "Expand"}
+              </span>
+            </Button>
+          </div>
+
+          {/* All children from all partnerships */}
+          {node.expanded && (
+            <div className="flex flex-col items-center">
+              <div className="h-8 w-0.5 bg-primary/30"></div>
+
+              {/* Group children by partnership */}
+              <div className="flex flex-row items-start gap-12">
+                {node.partnerships.map((partnership, partnershipIndex) => (
+                  <div
+                    key={partnership.id}
+                    className="flex flex-col items-center"
+                  >
+                    {/* Partnership label */}
+                    <div className="mb-2">
+                      <Badge variant="outline" className="text-xs">
+                        Partnership {partnershipIndex + 1}
+                      </Badge>
+                    </div>
+
+                    {/* Partnership expand/collapse */}
+                    {partnership.children &&
+                      partnership.children.length > 0 && (
+                        <div className="flex items-center mb-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 rounded-full"
+                            onClick={() =>
+                              togglePartnershipExpanded(node.id, partnership.id)
+                            }
+                          >
+                            {partnership.expanded ? (
+                              <ChevronDown className="h-3 w-3" />
+                            ) : (
+                              <ChevronRight className="h-3 w-3" />
+                            )}
+                          </Button>
+                        </div>
+                      )}
+
+                    {/* Children for this partnership */}
+                    {partnership.children &&
+                      partnership.children.length > 0 &&
+                      partnership.expanded && (
+                        <>
+                          <div className="h-6 w-0.5 bg-primary/30"></div>
+                          <div className="flex flex-row items-start gap-6 relative">
+                            {partnership.children.length > 1 && (
+                              <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary/30"></div>
+                            )}
+                            {partnership.children.map((child) => (
+                              <div
+                                key={child.id}
+                                className="flex flex-col items-center"
+                              >
+                                <div className="h-4 w-0.5 bg-primary/30"></div>
+                                {renderFamilyTree(child)}
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <div className="p-6 w-full h-[calc(100vh-4rem)] overflow-hidden bg-gradient-to-b from-gray-50 to-gray-100">
+      <div className="mb-6 flex flex-wrap justify-between items-center gap-4">
+        <h1 className="text-2xl font-bold text-gray-800">
+          Family Tree - Multiple Partners
+        </h1>
+
+        <div className="flex flex-wrap items-center gap-2 md:gap-4">
+          <div className="relative w-full md:w-auto">
+            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search family members..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className="pl-8 h-9 w-full md:w-[200px]"
+            />
+          </div>
+
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={zoomOut}
+              className="h-8 w-8 bg-transparent"
+            >
+              <ZoomOut className="h-4 w-4" />
+              <span className="sr-only">Zoom Out</span>
+            </Button>
+            <span className="text-sm w-12 text-center">
+              {Math.round(zoomLevel * 100)}%
+            </span>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={zoomIn}
+              className="h-8 w-8 bg-transparent"
+            >
+              <ZoomIn className="h-4 w-4" />
+              <span className="sr-only">Zoom In</span>
+            </Button>
+          </div>
+
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={expandAll}
+              className="text-xs h-8 bg-transparent"
+            >
+              <ChevronDown className="h-3 w-3 mr-1" />
+              Expand
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={collapseAll}
+              className="text-xs h-8 bg-transparent"
+            >
+              <ChevronRight className="h-3 w-3 mr-1" />
+              Collapse
+            </Button>
+          </div>
+
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={resetView}
+            className="h-8 w-8 bg-transparent"
+          >
+            <Move className="h-4 w-4" />
+            <span className="sr-only">Reset View</span>
+          </Button>
+
+          <Button size="sm" onClick={() => setShowAddDialog(true)}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add Member
+          </Button>
+        </div>
+      </div>
+
+      <div
+        ref={containerRef}
+        className="relative w-full h-[calc(100vh-10rem)] overflow-hidden bg-white rounded-lg shadow-sm"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{ cursor: isDragging ? "grabbing" : "grab" }}
+      >
+        <div
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-200 ease-in-out"
+          style={{
+            transform: `translate(${position.x}px, ${position.y}px) scale(${zoomLevel})`,
+          }}
+        >
+          {renderFamilyTree(familyData)}
+        </div>
+      </div>
+
+      {/* Dialogs */}
+      <FamilyMemberDetailDialog
+        open={showDetailDialog}
+        onOpenChange={setShowDetailDialog}
+        person={selectedPerson}
+        onEdit={() => {
+          setShowDetailDialog(false);
+          setShowEditDialog(true);
+        }}
+      />
+
+      {selectedPerson && (
+        <FamilyMemberForm
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          initialData={selectedPerson}
+          onSave={handleUpdatePerson}
+        />
+      )}
+
+      {selectedPerson && (
+        <DeleteConfirmationDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          title="Delete Family Member"
+          description={`Are you sure you want to delete ${selectedPerson.name} from your family tree? This action cannot be undone.`}
+          onConfirm={handleDeletePerson}
+        />
+      )}
+
+      <AddFamilyMemberDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+        onSave={handleAddPerson}
+        existingPeople={people}
+        existingPartnerships={[]}
+      />
+    </div>
+  );
+}

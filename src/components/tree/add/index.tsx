@@ -3,7 +3,8 @@
 import useAddFamilyMemberService from "@/src/apiServices/useAddFamilyMemberService";
 import { useAppDispatch, useAppSelector } from "@/src/redux/redux-hooks";
 import {
-  selectedPerson,
+  selectedChild,
+  selectedFather,
   setShowAddMember,
   showAddDialog,
 } from "@/src/redux/tree/tree-slice";
@@ -30,7 +31,9 @@ interface AddFamilyMemberDialogProps {
 export function AddFamilyMemberDialog({ refetch }: AddFamilyMemberDialogProps) {
   const [activeTab, setActiveTab] = useState("basic");
 
-  const person = useAppSelector(selectedPerson);
+  const father = useAppSelector(selectedFather);
+  const child = useAppSelector(selectedChild);
+
   const {
     isLoading,
     handleSubmit,
@@ -43,10 +46,15 @@ export function AddFamilyMemberDialog({ refetch }: AddFamilyMemberDialogProps) {
 
   // Add familyId
   useEffect(() => {
-    if (person) {
-      setValue("fatherId", person.id);
+    if (father) {
+      setValue("fatherId", father.id);
     }
-  }, [person]);
+
+    if (child) {
+      setValue("childId", child.id);
+      setValue("gender", "Male");
+    }
+  }, [father, child]);
 
   const dispatch = useAppDispatch();
 
@@ -60,7 +68,9 @@ export function AddFamilyMemberDialog({ refetch }: AddFamilyMemberDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add Family Member</DialogTitle>
+          <DialogTitle>
+            Add {child === null ? "Family Member" : "Father"}
+          </DialogTitle>
           <DialogDescription>
             Enter information about the new family member to add them to your
             tree.
@@ -95,6 +105,8 @@ export function AddFamilyMemberDialog({ refetch }: AddFamilyMemberDialogProps) {
                 errors={errors}
                 watch={watch}
                 setValue={setValue}
+                child={child}
+                father={father}
               />
               <div className="pt-2 flex justify-end">
                 <Button type="button" onClick={() => setActiveTab("details")}>

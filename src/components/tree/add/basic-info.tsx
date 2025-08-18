@@ -1,4 +1,5 @@
 import { cn } from "@/src/lib/utils";
+import { FamilyMember, FamilyNode } from "@/src/types/family-member";
 import { IAddMemberSchema } from "@/src/validations/family-member-validation";
 import { Label } from "@radix-ui/react-label";
 import { Upload } from "lucide-react";
@@ -13,24 +14,44 @@ import { Avatar, AvatarImage } from "../../ui/avatar";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { RadioGroup, RadioGroupItem } from "../../ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../ui/select";
 
 interface BasicInfoProps {
   register: UseFormRegister<IAddMemberSchema>;
   errors: FieldErrors<IAddMemberSchema>;
   watch: UseFormWatch<IAddMemberSchema>;
   setValue: UseFormSetValue<IAddMemberSchema>;
+  child: FamilyNode | null;
+  father: FamilyNode | null;
 }
 const BasicInfo: FC<BasicInfoProps> = ({
   register,
   errors,
   watch,
   setValue,
+  child,
+  father,
 }) => {
   const gender = watch("gender");
 
   const handleGenderChange = (option: string) => {
     setValue("gender", option as "Male" | "Female");
   };
+
+  // console.log("father:", father);
+  const motherId = watch("motherId");
+
+  const handleAddMother = (mother: string) => {
+    if (mother === "") return;
+    setValue("motherId", parseInt(mother));
+  };
+
   return (
     <div className="space-y-4 py-4">
       <div className="flex justify-center mb-4">
@@ -95,23 +116,45 @@ const BasicInfo: FC<BasicInfoProps> = ({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label>Gender</Label>
-        <RadioGroup
-          value={gender}
-          onValueChange={handleGenderChange}
-          className="flex space-x-4"
-        >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="Male" id="male" />
-            <Label htmlFor="male">Male</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="Female" id="female" />
-            <Label htmlFor="female">Female</Label>
-          </div>
-        </RadioGroup>
-      </div>
+      {child === null && (
+        <div className="space-y-2">
+          <Label>Gender</Label>
+          <RadioGroup
+            value={gender}
+            onValueChange={handleGenderChange}
+            className="flex space-x-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="Male" id="male" />
+              <Label htmlFor="male">Male</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="Female" id="female" />
+              <Label htmlFor="female">Female</Label>
+            </div>
+          </RadioGroup>
+        </div>
+      )}
+      {father !== null && (father as FamilyMember).partners.length > 0 && (
+        <div className="space-y-2">
+          <Label htmlFor="motherId">Mother</Label>
+          <Select
+            value={motherId?.toString()}
+            onValueChange={(value) => handleAddMother(value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select mother" />
+            </SelectTrigger>
+            <SelectContent>
+              {(father as FamilyMember).partners.map((partner) => (
+                <SelectItem key={partner.id} value={partner.id.toString()}>
+                  {partner.firstName} {partner.lastName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">

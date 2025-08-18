@@ -11,6 +11,9 @@ interface ITree {
   tree: {
     tree: FamilyNode | null;
     selectedPerson: FamilyNode | null;
+    father: FamilyNode | null;
+    mother: FamilyNode | null;
+    child: FamilyNode | null;
     showDetailDialog: boolean;
     showEditDialog: boolean;
     showDeleteDialog: boolean;
@@ -21,6 +24,7 @@ interface ITree {
     showAddPhoto: boolean;
     selectedPhoto: Image | null;
     showViewPhoto: boolean;
+    showAddFather: boolean;
   };
 }
 
@@ -39,6 +43,10 @@ export const treeSlice = createSlice({
     showAddPhoto: false,
     selectedPhoto: null,
     showViewPhoto: false,
+    showAddFather: false,
+    father: null,
+    mother: null,
+    child: null,
   },
   reducers: {
     setFamilyData: (state, action) => {
@@ -56,8 +64,10 @@ export const treeSlice = createSlice({
       state.selectedPerson = action.payload.person;
     },
     setShowAddMember: (state, action) => {
-      (state.showAddDialog = action.payload.show),
-        (state.selectedPerson = action.payload.person);
+      state.showAddDialog = action.payload.show;
+      state.mother = action.payload.mother;
+      state.father = action.payload.father;
+      state.child = action.payload.child;
     },
     setConfirmDeletePerson: (state, action) => {
       state.showDeleteDialog = action.payload.show;
@@ -82,6 +92,9 @@ export const treeSlice = createSlice({
       (state.selectedPhoto = action.payload.photo),
         (state.showViewPhoto = action.payload.show);
     },
+    setShowAddFatherDialog: (state, action) => {
+      state.showAddFather = action.payload;
+    },
   },
 });
 
@@ -97,6 +110,7 @@ export const {
   setEditPartnership,
   setShowAddPhoto,
   setShowPhoto,
+  setShowAddFatherDialog,
 } = treeSlice.actions;
 
 export const selectFamilyData = (state: ITree) => state.tree.tree;
@@ -112,5 +126,9 @@ export const highlightedPerson = (state: ITree) => state.tree.highlightedPerson;
 export const showAddPhoto = (state: ITree) => state.tree.showAddPhoto;
 export const showViewPhoto = (state: ITree) => state.tree.showViewPhoto;
 export const selectedPhoto = (state: ITree) => state.tree.selectedPhoto;
+export const showAddFatherDialog = (state: ITree) => state.tree.showAddFather;
+export const selectedMother = (state: ITree) => state.tree.mother;
+export const selectedFather = (state: ITree) => state.tree.father;
+export const selectedChild = (state: ITree) => state.tree.child;
 
 export default treeSlice.reducer;

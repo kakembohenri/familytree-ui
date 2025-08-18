@@ -27,6 +27,7 @@ import {
   ZoomOut,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
+import JWTDecodeContainer from "../auth/jwt-decode-container";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -38,7 +39,6 @@ import { EditPartnershipDialog } from "./edit/partnership";
 import { FamilyMemberDetailDialog } from "./family-member-detail-dialog";
 import RenderFamilyTree from "./family-tree";
 import TreeUtilities from "./tree-utilities";
-import JWTDecodeContainer from "../auth/jwt-decode-container";
 
 export default function Tree() {
   const dispatch = useAppDispatch();

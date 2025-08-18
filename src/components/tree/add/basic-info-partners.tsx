@@ -2,35 +2,33 @@ import { cn } from "@/src/lib/utils";
 import { IAddPartnerSchema } from "@/src/validations/partner-validation";
 import { Label } from "@radix-ui/react-label";
 import { Upload } from "lucide-react";
-import { FC } from "react";
-import {
-  FieldErrors,
-  UseFormRegister,
-  UseFormSetValue,
-  UseFormWatch,
-} from "react-hook-form";
+import { FC, useEffect } from "react";
+import { FieldErrors, UseFormRegister, UseFormSetValue } from "react-hook-form";
 import { Avatar, AvatarImage } from "../../ui/avatar";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
-import { RadioGroup, RadioGroupItem } from "../../ui/radio-group";
 
 interface BasicInfoPartnerProps {
   register: UseFormRegister<IAddPartnerSchema>;
   errors: FieldErrors<IAddPartnerSchema>;
-  watch: UseFormWatch<IAddPartnerSchema>;
+  // watch: UseFormWatch<IAddPartnerSchema>;
   setValue: UseFormSetValue<IAddPartnerSchema>;
 }
 const BasicInfoPartner: FC<BasicInfoPartnerProps> = ({
   register,
   errors,
-  watch,
+  // watch,
   setValue,
 }) => {
-  const gender = watch("gender");
+  // const gender = watch("gender");
 
   const handleGenderChange = (option: string) => {
     setValue("gender", option as "Male" | "Female");
   };
+
+  useEffect(() => {
+    setValue("gender", "Female");
+  }, []);
   return (
     <div className="space-y-4 py-4">
       <div className="flex justify-center mb-4">
@@ -95,7 +93,7 @@ const BasicInfoPartner: FC<BasicInfoPartnerProps> = ({
         </div>
       </div>
 
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <Label>Gender</Label>
         <RadioGroup
           value={gender}
@@ -111,7 +109,7 @@ const BasicInfoPartner: FC<BasicInfoPartnerProps> = ({
             <Label htmlFor="female">Female</Label>
           </div>
         </RadioGroup>
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">

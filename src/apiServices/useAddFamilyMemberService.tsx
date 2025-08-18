@@ -39,6 +39,7 @@ const useAddFamilyMemberService = ({ refetch }: { refetch: () => void }) => {
       gender: "Male",
       fatherId: null,
       motherId: null,
+      childId: null,
       placeOfBirth: "",
       occupation: "",
     },

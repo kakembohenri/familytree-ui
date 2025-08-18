@@ -14,6 +14,7 @@ export const AddMemberSchema = z.object({
   occupation: z.string(),
   fatherId: z.number().nullable(),
   motherId: z.number().nullable(),
+  childId: z.number().nullable(),
   bio: z.string(),
 });
 

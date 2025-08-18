@@ -37,7 +37,7 @@ export function AddPartner({ refetch }: AddPartnerProps) {
     submitPartner,
     register,
     errors,
-    watch,
+    // watch,
     setValue,
   } = useAddPartnerService({ refetch });
 
@@ -93,7 +93,7 @@ export function AddPartner({ refetch }: AddPartnerProps) {
               <BasicInfoPartner
                 register={register}
                 errors={errors}
-                watch={watch}
+                // watch={watch}
                 setValue={setValue}
               />
               <div className="pt-2 flex justify-end">

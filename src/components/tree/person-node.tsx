@@ -52,13 +52,20 @@ const PersonNode: FC<PersonNodeParams> = ({ person }) => {
   };
 
   // Add family child
-  const handleAddChild = (person: FamilyNode) => {
-    dispatch(setShowAddMember({ show: true, person: person }));
+  const handleAddChild = (father: FamilyNode) => {
+    dispatch(setShowAddMember({ show: true, father }));
   };
 
   // Add partner
   const handleAddPartner = (person: FamilyNode) => {
     dispatch(setAddPartner({ show: true, person: person }));
+  };
+
+  // Add father
+  const handleAddFather = (child: FamilyNode) => {
+    dispatch(
+      setShowAddMember({ show: true, father: null, mother: null, child: child })
+    );
   };
 
   // Confirm delete person
@@ -73,7 +80,6 @@ const PersonNode: FC<PersonNodeParams> = ({ person }) => {
 
   useEffect(() => {
     if (user) {
-      console.log("user:", user);
       setShowFormActions((user as any).Role === UserRoles.ADMIN);
     }
   }, [user]);
@@ -125,27 +131,36 @@ const PersonNode: FC<PersonNodeParams> = ({ person }) => {
                   <Eye className="mr-2 h-4 w-4" />
                   <span>View</span>
                 </DropdownMenuItem>
+                {person.fatherId === null && !(person as Partner).partnerId && (
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => handleAddFather(person)}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    <span>Add father</span>
+                  </DropdownMenuItem>
+                )}
                 {showFormActions && (
                   <>
                     {(person as FamilyMember)?.partners &&
-                    (person as FamilyMember).partners?.length > 0 ? (
-                      <DropdownMenuItem
-                        className="cursor-pointer"
-                        onClick={() => handleAddChild(person)}
-                      >
-                        <Plus className="mr-2 h-4 w-4" />
-                        <span>Add child</span>
-                      </DropdownMenuItem>
-                    ) : (
-                      !(person as Partner).partnerId && (
+                      (person as FamilyMember).partners?.length > 0 && (
                         <DropdownMenuItem
                           className="cursor-pointer"
-                          onClick={() => handleAddPartner(person)}
+                          onClick={() => handleAddChild(person)}
                         >
                           <Plus className="mr-2 h-4 w-4" />
-                          <span>Add partner</span>
+                          <span>Add child</span>
                         </DropdownMenuItem>
-                      )
+                      )}
+
+                    {!(person as Partner).partnerId && (
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        onClick={() => handleAddPartner(person)}
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        <span>Add partner</span>
+                      </DropdownMenuItem>
                     )}
                     {(person as Partner).partnerId && (
                       <DropdownMenuItem
@@ -181,14 +196,16 @@ const PersonNode: FC<PersonNodeParams> = ({ person }) => {
       <div className="mt-1 text-center text-sm font-medium">
         {person.firstName} {person.middleName} {person.lastName}
       </div>
-      {person.born && (
-        <div className="flex flex-col text-center text-xs text-muted-foreground">
-          <span>b. {formatToHumanReadableDate(person.born)}</span>
-          <span>
-            {person.died && ` - d. ${formatToHumanReadableDate(person.died)}`}
-          </span>
-        </div>
-      )}
+      <div className="flex flex-col text-center text-xs text-muted-foreground">
+        <span>
+          {person.born === ""
+            ? "b. Unknown"
+            : `b. ${formatToHumanReadableDate(person.born)}`}
+        </span>
+        <span>
+          {person.died && ` - d. ${formatToHumanReadableDate(person.died)}`}
+        </span>
+      </div>
     </div>
   );
 };
