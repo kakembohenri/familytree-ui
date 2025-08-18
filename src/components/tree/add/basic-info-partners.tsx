@@ -22,9 +22,9 @@ const BasicInfoPartner: FC<BasicInfoPartnerProps> = ({
 }) => {
   // const gender = watch("gender");
 
-  const handleGenderChange = (option: string) => {
-    setValue("gender", option as "Male" | "Female");
-  };
+  // const handleGenderChange = (option: string) => {
+  //   setValue("gender", option as "Male" | "Female");
+  // };
 
   useEffect(() => {
     setValue("gender", "Female");
