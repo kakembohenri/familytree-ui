@@ -135,7 +135,7 @@ const BasicInfo: FC<BasicInfoProps> = ({
           </RadioGroup>
         </div>
       )}
-      {father !== null && (father as FamilyMember).partners.length > 0 && (
+      {father !== null && (father as FamilyMember)?.partners.length > 0 && (
         <div className="space-y-2">
           <Label htmlFor="motherId">Mother</Label>
           <Select
